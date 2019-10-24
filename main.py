@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import pygame
 import json
+import random
 
 from player import Player
 
@@ -22,24 +23,6 @@ def draw_map(screen, map_matrix, player):
             #rect = pygame.Rect(0, 0, 100, 100)
             pygame.draw.rect(screen, color, rect)
 
-def move(map_matrix, action, player):
-    x, y = player.x, player.y
-    if action == 0:
-        x += 1
-    elif action == 2:
-        x -= 1
-    elif action ==1:
-        y += 1
-    elif action == 3:
-        y -= 1
-    if player.x < 0 or player.y < 0 or player.x >= map_matrix.shape[0] or player.y >= map_matrix.shape[1]:
-        return False
-    elif map_matrix[player.x, player.y] == 1:
-        return True
-    else:
-        player.x = x
-        player.y = y
-        return player
 
 def Q_learn(map_matrix, iterations, learning_rate = 0.5, gamma = 0.5, state = 0):
     # create q matrix
@@ -68,13 +51,14 @@ def update(screen, map_matrix, player):
     screen.fill( (255, 255, 255) )
     draw_map(screen, map_matrix, player)
     pygame.display.update()
+    done = player.move( map_matrix ,random.randint(0, 3))
+    player.log()
+    return done
 
 def main(path):
     # read json
     with open(path) as json_file:
         map_matrix = np.array(json.load(json_file)["map"])
-
-    print(map_matrix)
 
     # init game
     pygame.init()
@@ -90,6 +74,8 @@ def main(path):
 
     player = Player(0, 0, map_matrix)
 
+    done = False
+
     # main loop
     while True:
         # for each event
@@ -101,7 +87,8 @@ def main(path):
             elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
                 pass
                 
-        update(screen, map_matrix, player)
+        if done != True:
+            done = update(screen, map_matrix, player)
         clock.tick(30)
 
     
