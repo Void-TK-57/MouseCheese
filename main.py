@@ -3,11 +3,71 @@ import sys
 import pygame
 import json
 
-def draw_map(screen, map_matrix):
-    screen.fill( (255, 255, 255) )
+from player import Player
+
+def draw_map(screen, map_matrix, player):
     for i in range( map_matrix.shape[0] ):
         for j in range( map_matrix.shape[1] ):
-            pass
+            if i == player.x and j == player.y:
+                color = (0, 0, 255)
+            elif map_matrix[i][j] == -1:
+                color = (0, 0, 0)
+            elif map_matrix[i][j] == 1:
+                color = (0, 255, 0)
+            else:
+                continue
+            x = 360/map_matrix.shape[0]
+            y = 360/map_matrix.shape[1]
+            rect = pygame.Rect(x*j, i*y, x, y)
+            #rect = pygame.Rect(0, 0, 100, 100)
+            pygame.draw.rect(screen, color, rect)
+
+def move(map_matrix, action, player):
+    x, y = player.x, player.y
+    if action == 0:
+        x += 1
+    elif action == 2:
+        x -= 1
+    elif action ==1:
+        y += 1
+    elif action == 3:
+        y -= 1
+    if player.x < 0 or player.y < 0 or player.x >= map_matrix.shape[0] or player.y >= map_matrix.shape[1]:
+        return False
+    elif map_matrix[player.x, player.y] == 1:
+        return True
+    else:
+        player.x = x
+        player.y = y
+        return player
+
+def Q_learn(map_matrix, iterations, learning_rate = 0.5, gamma = 0.5, state = 0):
+    # create q matrix
+    # states = matrix.m * matrix.n
+    # actions = 4
+
+    pos = [0, 0]
+
+    def getAction(matrix, state):
+        max_ = max(matrix[state])
+        for action in range(len(matrix[state])):
+            if matrix[state][action] == max_:
+                return action
+        return 0
+
+    action = getAction(map_matrix, state)
+
+    matrix = np.zeros( (map_matrix.shape[0]*map_matrix.shape[1], 4) )
+    
+
+    # update function
+    Q[state, action] = Q[state, action] + lr * (reward + gamma * np.max(Q[new_state, :]) - Q[state, action])
+
+
+def update(screen, map_matrix, player):
+    screen.fill( (255, 255, 255) )
+    draw_map(screen, map_matrix, player)
+    pygame.display.update()
 
 def main(path):
     # read json
@@ -20,14 +80,15 @@ def main(path):
     pygame.init()
 
     # display height and width
-    display_height = 600
-    disply_width = 600
+    display_height = 360
+    disply_width = 360
 
     screen = pygame.display.set_mode( (disply_width, display_height) )
     pygame.display.set_caption('Mouse Cheese')
 
     clock = pygame.time.Clock()
 
+    player = Player(0, 0, map_matrix)
 
     # main loop
     while True:
@@ -39,7 +100,8 @@ def main(path):
                 quit()
             elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
                 pass
-    
+                
+        update(screen, map_matrix, player)
         clock.tick(30)
 
     
