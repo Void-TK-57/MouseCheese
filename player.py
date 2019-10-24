@@ -28,16 +28,35 @@ class Player:
         else:
             self.x = x
             self.y = y
-            return self
+            return None
 
-    def get_reward(self, map, end):
-        pass
+    def get_reward(self, map_matrix):
+        # get goal position
+        x, y = np.where(map_matrix == 1)
+        # get the first (and only) cordinates
+        x, y = x[0], y[0]
+        # distance
+        distance = np.abs(self.x - x) + np.abs(self.y - y)
+        # reward function is proportional to the inverse of the reward
+        return 1.0/(1.0 + float(distance))
 
     def Q_learn(self, map_matrix, iterations, learning_rate = 0.5, gamma = 0.5, state = 0):
-        state = self.move(map_matrix, self.get_action())
-        
+        # get current state
+        state = self.get_state()
+        # get action
+        action = self.get_action()
+        # move the player
+        move_valid = self.move(map_matrix, action)
+        # get new state
+        new_state = self.get_state()
+        # get reward
+        if move_valid == False:
+            reward = -1
+        else:
+            reward = self.get_reward(map_matrix)
+
         # update function
-        self.Q[state, action] = self.Q[state, action] + lr * (reward + gamma * np.max(self.Q[new_state, :]) - self.Q[state, action])
+        self.Q[state, action] = self.Q[state, action] + learning_rate * (reward + gamma * np.max(self.Q[new_state, :]) - self.Q[state, action])
 
     def init_Q(self, path=None, end = None):
         if path is not None:
