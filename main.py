@@ -9,7 +9,7 @@ from player import Player
 def draw_map(screen, map_matrix, player):
     for i in range( map_matrix.shape[0] ):
         for j in range( map_matrix.shape[1] ):
-            if i == player.x and j == player.y:
+            if j == player.x and i == player.y:
                 color = (0, 0, 255)
             elif map_matrix[i][j] == -1:
                 color = (0, 0, 0)
@@ -24,35 +24,12 @@ def draw_map(screen, map_matrix, player):
             pygame.draw.rect(screen, color, rect)
 
 
-def Q_learn(map_matrix, iterations, learning_rate = 0.5, gamma = 0.5, state = 0):
-    # create q matrix
-    # states = matrix.m * matrix.n
-    # actions = 4
-
-    pos = [0, 0]
-
-    def getAction(matrix, state):
-        max_ = max(matrix[state])
-        for action in range(len(matrix[state])):
-            if matrix[state][action] == max_:
-                return action
-        return 0
-
-    action = getAction(map_matrix, state)
-
-    matrix = np.zeros( (map_matrix.shape[0]*map_matrix.shape[1], 4) )
-    
-
-    # update function
-    Q[state, action] = Q[state, action] + lr * (reward + gamma * np.max(Q[new_state, :]) - Q[state, action])
-
-
 def update(screen, map_matrix, player):
+    done = player.Q_learn( map_matrix )
+    player.log()
     screen.fill( (255, 255, 255) )
     draw_map(screen, map_matrix, player)
     pygame.display.update()
-    done = player.move( map_matrix ,random.randint(0, 3))
-    player.log()
     return done
 
 def main(path):
@@ -72,9 +49,14 @@ def main(path):
 
     clock = pygame.time.Clock()
 
-    player = Player(0, 0, map_matrix)
+    player = Player(0, 0, np.zeros( (map_matrix.shape[0]*map_matrix.shape[1] , 4) )
 
     done = False
+
+    player.log()
+    screen.fill( (255, 255, 255) )
+    draw_map(screen, map_matrix, player)
+    pygame.display.update()
 
     # main loop
     while True:
@@ -84,12 +66,12 @@ def main(path):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-            elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                pass
-                
-        if done != True:
-            done = update(screen, map_matrix, player)
+            elif event.type == pygame.KEYDOWN :
+                if done != True:
+                    done = update(screen, map_matrix, player)
         clock.tick(30)
+                
+        
 
     
 

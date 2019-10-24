@@ -4,7 +4,7 @@ import random
 
 class Player:
 
-    def __init__(self, x, y, matrix = None):
+    def __init__(self, x, y, Q = None):
         self.x = x
         self.y = y
         self.Q = Q
@@ -37,10 +37,12 @@ class Player:
         x, y = x[0], y[0]
         # distance
         distance = np.abs(self.x - x) + np.abs(self.y - y)
+        print("  distance:")
+        print(distance)
         # reward function is proportional to the inverse of the reward
         return 1.0/(1.0 + float(distance))
 
-    def Q_learn(self, map_matrix, iterations, learning_rate = 0.5, gamma = 0.5, state = 0):
+    def Q_learn(self, map_matrix, learning_rate = 0.5, gamma = 0.5):
         # get current state
         state = self.get_state()
         # get action
@@ -57,6 +59,8 @@ class Player:
 
         # update function
         self.Q[state, action] = self.Q[state, action] + learning_rate * (reward + gamma * np.max(self.Q[new_state, :]) - self.Q[state, action])
+        
+        return move_valid
 
     def init_Q(self, path=None, end = None):
         if path is not None:
@@ -69,16 +73,13 @@ class Player:
                     self.Q[i][j] = end[0]+end[1] - (i + j)
 
     def get_state(self, x = None, y = None):
-        if x is None:
-            x = 
         return self.x + self.y*self.Q.shape[0]
 
     def get_action(self, chance = 70):
         i = random.randint(0, 100)
         if i < 70:
             # action based on q
-            actions = sefl.Q[self.get_state()]
-            print(actions)
+            actions = self.Q[self.get_state()]
             # get action
             action = np.where(actions == np.min(actions))[0][0]
             # return action
@@ -94,4 +95,6 @@ class Player:
         print(self.x)
         print("Y:")
         print(self.y)
+        print("Q:")
+        print(self.Q)
         print("="*20)
